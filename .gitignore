@@ -1,0 +1,20 @@
+# CMake build trees
+build/
+build-*/
+build-lto/
+
+# Databases created by the scripts, the shell, and the test suites
+*.quarry/
+run/
+demo-db/
+*.qdb
+*.sqlite
+*.sqlite3
+
+# Profiles
+*.prof
+perf.data*
+callgrind.out.*
+
+.DS_Store
+compile_commands.json
