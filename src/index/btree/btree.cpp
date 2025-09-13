@@ -404,6 +404,7 @@ Status BTree::Insert(const Value& key, uint64_t row_id) {
     Split split;
     QUARRY_TRY(InsertInto(root_, e, split));
     ++stats_.inserts;
+    logical_bytes_ += EntrySize(e);
 
     if (!split.happened) return Status::Ok();
 

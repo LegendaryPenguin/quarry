@@ -454,6 +454,12 @@ Index::Stats LsmIndex::stats() const {
     s.pages_read = io_->pages_read;
     s.pages_written = io_->pages_written;
     s.node_splits = 0;  // an LSM never splits a node; the B+ tree owns that number
+    // Byte counters, so write amplification is readable through the Index
+    // interface rather than only off the concrete type. A page-based ratio cannot
+    // express it: a 300-byte and a 4,000-byte flush both cost one page.
+    s.bytes_read = io_->bytes_read;
+    s.bytes_written = io_->bytes_written;
+    s.logical_bytes = logical_bytes_;
     s.compactions = compactions_;
     s.bloom_rejections = bloom_rejections_;
     s.sstables_consulted = sstables_consulted_;

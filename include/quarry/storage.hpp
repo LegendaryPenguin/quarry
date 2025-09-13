@@ -142,6 +142,13 @@ public:
 
     virtual Status Flush() = 0;
 
+    // Close flushes and releases resources. Separate from the destructor because
+    // a destructor cannot report a failure, and an index that must flush in-memory
+    // state to survive a reopen has to be able to say that the flush failed.
+    // Defaults to Flush() so an implementation with nothing further to do need not
+    // override it.
+    virtual Status Close() { return Flush(); }
+
     virtual std::string Describe() const = 0;
 
     // --- counters for the B+ tree versus LSM comparison ---
@@ -152,10 +159,29 @@ public:
         uint64_t pages_written = 0;
         uint64_t node_splits = 0;
 
+        // Byte counters, not just page counters. Write amplification is a ratio
+        // of bytes, and pages are a lossy denominator: a 300-byte flush and a
+        // 4,000-byte flush both cost one page, so a page-based ratio cannot
+        // express the figure the B+ tree versus LSM comparison exists to report.
+        uint64_t bytes_read = 0;
+        uint64_t bytes_written = 0;
+
+        // logical_bytes is the size of the data actually stored, so
+        // bytes_written / logical_bytes is write amplification.
+        uint64_t logical_bytes = 0;
+
         // LSM-only; zero on the B+ tree.
         uint64_t compactions = 0;
         uint64_t bloom_rejections = 0;
         uint64_t sstables_consulted = 0;
+
+        // WriteAmplification is the headline comparison figure. Returns 0 when
+        // nothing has been written rather than dividing by zero.
+        double WriteAmplification() const {
+            return logical_bytes == 0
+                       ? 0.0
+                       : static_cast<double>(bytes_written) / static_cast<double>(logical_bytes);
+        }
     };
 
     virtual Stats stats() const = 0;

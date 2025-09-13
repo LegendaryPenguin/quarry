@@ -47,7 +47,16 @@ public:
                      std::vector<uint64_t>& out) const override;
     Status Flush() override;
     std::string Describe() const override;
-    Stats stats() const override { return stats_; }
+    // Bytes are derived rather than counted separately: this tree only ever
+    // transfers whole kPageSize pages, so pages * kPageSize is exact rather than
+    // an estimate. An LSM cannot do this, which is why Stats carries both.
+    Stats stats() const override {
+        Stats s = stats_;
+        s.bytes_read = s.pages_read * kPageSize;
+        s.bytes_written = s.pages_written * kPageSize;
+        s.logical_bytes = logical_bytes_;
+        return s;
+    }
 
     // Levels from root to leaf; 1 is a tree that is a single leaf. Exposed because
     // "did this actually split" is otherwise invisible from outside.
@@ -117,6 +126,10 @@ private:
     // pages, and a counter that only counted writes would be useless for the
     // read-amplification comparison against the LSM.
     mutable Stats stats_;
+
+    // Sum of stored entry sizes, so bytes_written / logical_bytes is the same
+    // write-amplification ratio the LSM reports and the two are comparable.
+    uint64_t logical_bytes_ = 0;
 };
 
 }  // namespace quarry
