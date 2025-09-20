@@ -82,9 +82,22 @@ private:
     } while (false)
 
 // QUARRY_ASSIGN binds a Result's value or returns its Status.
-#define QUARRY_ASSIGN(lhs, expr)                            \
-    auto _res_##__LINE__ = (expr);                          \
-    if (!_res_##__LINE__.ok()) return _res_##__LINE__.status(); \
-    lhs = _res_##__LINE__.take()
+//
+// The temporary is named with __COUNTER__ rather than __LINE__. Two levels of
+// indirection are needed either way, because `_res_##__LINE__` pastes the literal
+// text "__LINE__" instead of the number — but __LINE__ still collides when two
+// uses appear on one line, which is legal code that should not fail to compile.
+// __COUNTER__ is unique per expansion. It is a compiler extension rather than
+// standard C++, and is supported by clang, gcc, and msvc.
+#define QUARRY_CONCAT_INNER(a, b) a##b
+#define QUARRY_CONCAT(a, b) QUARRY_CONCAT_INNER(a, b)
+
+#define QUARRY_ASSIGN_IMPL(lhs, expr, tmp)      \
+    auto tmp = (expr);                          \
+    if (!tmp.ok()) return tmp.status();         \
+    lhs = tmp.take()
+
+#define QUARRY_ASSIGN(lhs, expr) \
+    QUARRY_ASSIGN_IMPL(lhs, expr, QUARRY_CONCAT(_quarry_res_, __COUNTER__))
 
 }  // namespace quarry
