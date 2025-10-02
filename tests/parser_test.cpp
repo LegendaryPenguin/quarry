@@ -500,7 +500,11 @@ QUARRY_TEST(RejectsUnknownFunction) {
 }
 
 QUARRY_TEST(RejectsStatementThatStartsWithGarbage) {
-    const std::string message = Rejected("DELETE FROM t");
+    // Genuine garbage, not valid SQL the engine happens to omit. DELETE used to be
+    // the case here, which was wrong: it is well-formed SQL, so reporting a syntax
+    // error sent the reader hunting for a typo that does not exist. It is now a
+    // kNotImplemented, asserted in sql_test.
+    const std::string message = Rejected("WIBBLE FROM t");
     CHECK(Contains(message, "expected a statement"));
 }
 

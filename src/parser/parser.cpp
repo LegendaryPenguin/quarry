@@ -20,10 +20,81 @@ std::string Position(const Token& t) {
     return "line " + std::to_string(t.line) + ", column " + std::to_string(t.column);
 }
 
+// Well-formed SQL that this engine deliberately does not implement.
+//
+// Reported as kNotImplemented rather than kSyntaxError, which is not pedantry: a
+// syntax error sends the reader hunting for a typo, and there is no typo. The
+// statement is valid SQL and the engine simply does not support it. The SQL
+// surface here is narrow on purpose, so hitting its edge is expected and should
+// say so.
+//
+// Recognition is contextual rather than by reserving these words. Reserving
+// `having` or `left` would make them unusable as column names, which is a real
+// cost paid for an error message; the parser already holds the lexeme at the
+// point it gives up, so it can recognize the construct without the lexer's help.
+std::optional<Status> UnsupportedConstruct(const Token& found, std::string_view expectation) {
+    const std::string& w = found.text;
+
+    // Leading with "not supported" rather than with the construct name avoids a
+    // subject-verb agreement problem: the names are a mix of singular and plural
+    // ("HAVING", "outer joins"), and "<name> is not supported" reads wrong for half
+    // of them.
+    auto ni = [&](std::string_view construct, std::string_view detail) {
+        return Status::NotImplemented("not supported at " + Position(found) + ": " +
+                                      std::string(construct) + "; " + std::string(detail));
+    };
+
+    if (w == "having") {
+        return ni("HAVING", "filter after aggregation is outside the supported subset");
+    }
+    if (w == "distinct") {
+        return ni("DISTINCT", "use GROUP BY over the same columns instead");
+    }
+    if (w == "union" || w == "intersect" || w == "except") {
+        return ni("set operations (UNION/INTERSECT/EXCEPT)",
+                  "only a single SELECT block is supported");
+    }
+    if (w == "offset") {
+        return ni("OFFSET", "LIMIT is supported, OFFSET is not");
+    }
+    if (w == "left" || w == "right" || w == "full" || w == "outer") {
+        return ni("outer joins", "only a single-column equi INNER JOIN is supported");
+    }
+    if (w == "delete" || w == "update") {
+        return ni("UPDATE and DELETE",
+                  "the engine is append-oriented; segments are immutable once written");
+    }
+    if (w == "with") {
+        return ni("common table expressions", "only a single SELECT block is supported");
+    }
+    // A subquery announces itself as SELECT appearing where a value was wanted.
+    if (w == "select" && expectation.find("expression") != std::string_view::npos) {
+        return ni("subqueries", "an expression may not contain a SELECT");
+    }
+    // A derived table is an open paren where a table name was wanted.
+    if (w == "(" && expectation.find("table name") != std::string_view::npos) {
+        return ni("derived tables (a subquery in FROM)", "FROM must name a table");
+    }
+    if ((w == "inner" || w == "join" || w == "cross") &&
+        expectation.find("end of statement") != std::string_view::npos) {
+        return ni("more than one join", "a query may contain at most one INNER JOIN");
+    }
+    // A comma after the FROM table is the old cross-join spelling.
+    if (w == "," && expectation.find("end of statement") != std::string_view::npos) {
+        return ni("comma cross joins", "use INNER JOIN ... ON instead");
+    }
+    return std::nullopt;
+}
+
 // Every message has the same shape — where, what was wanted, what was there —
 // so that a user reading two different errors does not have to re-learn the
 // format, and so a test can assert on the position substring.
 Status Expected(const Token& found, const std::string& expectation) {
+    // Check for a recognizable unsupported construct before calling it a syntax
+    // error, so the one message a user is most likely to hit is the useful one.
+    if (std::optional<Status> unsupported = UnsupportedConstruct(found, expectation)) {
+        return *unsupported;
+    }
     return Status::SyntaxError("syntax error at " + Position(found) + ": expected " +
                                expectation + ", found " + found.Describe());
 }
@@ -166,6 +237,12 @@ private:
 Result<ast::Statement> Parser::ParseStatement() {
     ast::Statement stmt;
 
+    // Statements the engine does not implement are caught here rather than
+    // falling through to a confusing "expected SELECT" further down.
+    if (std::optional<Status> unsupported = UnsupportedConstruct(Cur(), "a statement")) {
+        return *unsupported;
+    }
+
     if (Cur().IsKeyword("select")) {
         Result<std::unique_ptr<ast::SelectStatement>> select = ParseSelect();
         if (!select.ok()) return select.status();
@@ -292,6 +369,14 @@ Status Parser::ParseJoin(ast::SelectStatement& select) {
 
 Result<std::unique_ptr<ast::SelectStatement>> Parser::ParseSelect() {
     QUARRY_TRY(ConsumeKeyword("select"));
+
+    // DISTINCT has to be caught here. It is not a reserved word, so it would
+    // otherwise be consumed as the first projection's column name and the failure
+    // would surface much later as "expected FROM" pointing at the real column.
+    if (std::optional<Status> unsupported = UnsupportedConstruct(Cur(), "a statement")) {
+        return *unsupported;
+    }
+
     auto select = std::make_unique<ast::SelectStatement>();
 
     QUARRY_TRY(ParseProjections(select->projections));
