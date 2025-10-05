@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700" width="980" height="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b9bb4"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7cb87c"/>
+    </marker>
+  </defs>
+
+  <rect width="980" height="700" fill="#14161b"/>
+  <text x="32" y="44" fill="#e6e9ef" font-size="21" font-weight="600">Quarry</text>
+  <text x="32" y="68" fill="#8b9bb4" font-size="13">columnar analytical engine — four layers, and the one number each layer is judged on</text>
+
+  <!-- ============ LAYER 1: SQL frontend ============ -->
+  <rect x="32" y="96" width="560" height="84" rx="7" fill="#1b1f27" stroke="#2f3643"/>
+  <text x="48" y="118" fill="#5eb0ef" font-size="12.5" font-weight="600">1 · SQL frontend</text>
+  <rect x="48" y="128" width="118" height="38" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="58" y="144" fill="#cdd6e3" font-size="10.5">lexer</text>
+  <text x="58" y="158" fill="#6f7d94" font-size="9.5">line/col on error</text>
+  <rect x="176" y="128" width="118" height="38" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="186" y="144" fill="#cdd6e3" font-size="10.5">parser</text>
+  <text x="186" y="158" fill="#6f7d94" font-size="9.5">recursive descent</text>
+  <rect x="304" y="128" width="118" height="38" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="314" y="144" fill="#cdd6e3" font-size="10.5">AST</text>
+  <text x="314" y="158" fill="#6f7d94" font-size="9.5">names, not indexes</text>
+  <rect x="432" y="128" width="144" height="38" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="442" y="144" fill="#cdd6e3" font-size="10.5">binder</text>
+  <text x="442" y="158" fill="#6f7d94" font-size="9.5">resolve + type check</text>
+
+  <path d="M 312 180 L 312 200" stroke="#8b9bb4" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ============ LAYER 2: planner ============ -->
+  <rect x="32" y="200" width="560" height="108" rx="7" fill="#1b1f27" stroke="#3a6ea5"/>
+  <text x="48" y="222" fill="#5eb0ef" font-size="12.5" font-weight="600">2 · planner and optimizer</text>
+  <text x="300" y="222" fill="#6f7d94" font-size="10">each rule individually switchable</text>
+
+  <rect x="48" y="232" width="100" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="56" y="251" fill="#cdd6e3" font-size="10">constant fold</text>
+  <rect x="156" y="232" width="124" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="164" y="251" fill="#cdd6e3" font-size="10">predicate pushdown</text>
+  <rect x="288" y="232" width="128" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="296" y="251" fill="#cdd6e3" font-size="10">projection pruning</text>
+  <rect x="424" y="232" width="152" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="432" y="251" fill="#cdd6e3" font-size="10">segment pruning (zone maps)</text>
+
+  <rect x="48" y="268" width="180" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="56" y="287" fill="#cdd6e3" font-size="10">index selection (cost-based)</text>
+  <text x="240" y="282" fill="#6f7d94" font-size="10">a scan must win when the predicate</text>
+  <text x="240" y="295" fill="#6f7d94" font-size="10">is unselective, or it is not a decision</text>
+
+  <path d="M 312 308 L 312 328" stroke="#8b9bb4" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ============ LAYER 3: execution ============ -->
+  <rect x="32" y="328" width="560" height="128" rx="7" fill="#1b1f27" stroke="#2f3643"/>
+  <text x="48" y="350" fill="#5eb0ef" font-size="12.5" font-weight="600">3 · vectorized execution</text>
+  <text x="258" y="350" fill="#6f7d94" font-size="10">pull-based · 2048 rows per batch</text>
+
+  <rect x="48" y="360" width="86" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="56" y="379" fill="#cdd6e3" font-size="10">scan</text>
+  <rect x="142" y="360" width="86" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="150" y="379" fill="#cdd6e3" font-size="10">filter</text>
+  <rect x="236" y="360" width="86" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="244" y="379" fill="#cdd6e3" font-size="10">project</text>
+  <rect x="330" y="360" width="112" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="338" y="379" fill="#cdd6e3" font-size="10">hash aggregate</text>
+  <rect x="450" y="360" width="126" height="30" rx="4" fill="#232936" stroke="#2f3643"/>
+  <text x="458" y="379" fill="#cdd6e3" font-size="10">sort · limit · hash join</text>
+
+  <rect x="48" y="400" width="528" height="44" rx="5" fill="#1e232c" stroke="#5a4a2a"/>
+  <text x="60" y="418" fill="#d8a657" font-size="10.5" font-weight="600">the selection vector is the whole trick</text>
+  <text x="60" y="434" fill="#8b9bb4" font-size="10">A filter copies no column data. It writes the indexes that passed, and every operator above iterates those.</text>
+
+  <path d="M 312 456 L 312 476" stroke="#8b9bb4" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ============ LAYER 4: storage ============ -->
+  <rect x="32" y="476" width="560" height="186" rx="7" fill="#1b1f27" stroke="#2f3643"/>
+  <text x="48" y="498" fill="#5eb0ef" font-size="12.5" font-weight="600">4 · storage</text>
+
+  <rect x="48" y="508" width="250" height="68" rx="5" fill="#232936" stroke="#2f3643"/>
+  <text x="58" y="526" fill="#cdd6e3" font-size="10.5">immutable segments, column-major</text>
+  <text x="58" y="542" fill="#6f7d94" font-size="9.5">per-chunk min / max / null count</text>
+  <text x="58" y="556" fill="#6f7d94" font-size="9.5">plain · dictionary · run-length</text>
+  <text x="58" y="570" fill="#6f7d94" font-size="9.5">encoding chosen from the data</text>
+
+  <rect x="306" y="508" width="270" height="68" rx="5" fill="#232936" stroke="#2f3643"/>
+  <text x="316" y="526" fill="#cdd6e3" font-size="10.5">buffer pool · 4 KiB pages · clock / LRU</text>
+  <text x="316" y="542" fill="#6f7d94" font-size="9.5">deliberately smaller than the data, so</text>
+  <text x="316" y="556" fill="#6f7d94" font-size="9.5">eviction actually happens</text>
+  <text x="316" y="570" fill="#6f7d94" font-size="9.5">pinned pages are never evicted</text>
+
+  <rect x="48" y="586" width="250" height="62" rx="5" fill="#232936" stroke="#3a6ea5"/>
+  <text x="58" y="604" fill="#5eb0ef" font-size="10.5">B+ tree  (primary index)</text>
+  <text x="58" y="620" fill="#6f7d94" font-size="9.5">split, grow root, linked leaves</text>
+  <text x="58" y="636" fill="#6f7d94" font-size="9.5">read-optimized</text>
+
+  <rect x="306" y="586" width="270" height="62" rx="5" fill="#232936" stroke="#5a4a2a"/>
+  <text x="316" y="604" fill="#d8a657" font-size="10.5">LSM tree  (the comparison)</text>
+  <text x="316" y="620" fill="#6f7d94" font-size="9.5">memtable · SSTables · Bloom · compaction</text>
+  <text x="316" y="636" fill="#6f7d94" font-size="9.5">write-optimized, and the point is the tradeoff</text>
+
+  <!-- ============ right column: what each layer is measured on ============ -->
+  <rect x="616" y="96" width="332" height="212" rx="7" fill="#171a21" stroke="#39404f"/>
+  <text x="632" y="120" fill="#7cb87c" font-size="12.5" font-weight="600">measured, not asserted</text>
+
+  <text x="632" y="148" fill="#cdd6e3" font-size="10.5">vectorized vs row-at-a-time</text>
+  <text x="632" y="163" fill="#6f7d94" font-size="10">same filter, two execution models</text>
+
+  <text x="632" y="188" fill="#cdd6e3" font-size="10.5">projection pushdown</text>
+  <text x="632" y="203" fill="#6f7d94" font-size="10">bytes actually read, 1 column of 5</text>
+
+  <text x="632" y="228" fill="#cdd6e3" font-size="10.5">segment pruning</text>
+  <text x="632" y="243" fill="#6f7d94" font-size="10">skipped vs scanned, correlated</text>
+  <text x="632" y="256" fill="#6f7d94" font-size="10">column against a random one</text>
+
+  <text x="632" y="281" fill="#cdd6e3" font-size="10.5">B+ tree vs LSM</text>
+  <text x="632" y="296" fill="#6f7d94" font-size="10">read and write amplification</text>
+
+  <!-- correctness -->
+  <rect x="616" y="328" width="332" height="164" rx="7" fill="#171a21" stroke="#39404f"/>
+  <text x="632" y="352" fill="#7cb87c" font-size="12.5" font-weight="600">how correctness is checked</text>
+  <text x="632" y="378" fill="#cdd6e3" font-size="10.5">differential against SQLite</text>
+  <text x="632" y="393" fill="#6f7d94" font-size="10">one generated dataset, loaded into</text>
+  <text x="632" y="406" fill="#6f7d94" font-size="10">both, every query compared</text>
+  <text x="632" y="430" fill="#cdd6e3" font-size="10.5">B+ tree vs std::multimap</text>
+  <text x="632" y="445" fill="#6f7d94" font-size="10">randomized, interleaved ops</text>
+  <text x="632" y="469" fill="#cdd6e3" font-size="10.5">zone map vs brute force</text>
+  <text x="632" y="484" fill="#6f7d94" font-size="10">a false skip is silent data loss</text>
+
+  <!-- the rule -->
+  <rect x="616" y="512" width="332" height="150" rx="7" fill="#171a21" stroke="#5a4a2a"/>
+  <text x="632" y="536" fill="#d8a657" font-size="12.5" font-weight="600">the narrow SQL surface is the point</text>
+  <text x="632" y="562" fill="#8b9bb4" font-size="10">Eight statement forms, four types, one</text>
+  <text x="632" y="576" fill="#8b9bb4" font-size="10">join shape. Everything cut from the</text>
+  <text x="632" y="590" fill="#8b9bb4" font-size="10">grammar bought depth below it.</text>
+  <text x="632" y="614" fill="#6f7d94" font-size="10">A predicate stays in column-op-constant</text>
+  <text x="632" y="628" fill="#6f7d94" font-size="10">form precisely so a zone map and an</text>
+  <text x="632" y="642" fill="#6f7d94" font-size="10">index can both answer it.</text>
+</svg>
